@@ -33,6 +33,8 @@ cd odoo
 
 pip3 install -r requirements.txt
 
+sudo apt-get install postgresql postgresql-contrib # Install PostGreSQL if not installed 
+
 sudo su - postgres -c "createuser -s $USER" ## create postgreSQL user same as current log in user with super user priviledge
 
 ## START THE ODOO SERVER ##
