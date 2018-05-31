@@ -1,43 +1,77 @@
-# InstallOdoo
-Command with comments to install Odoo 11
+# Setup Odoo 11 Dev enviornment on Ubuntu 16.04 LTS #
 
-## CREATE DEV USER ##
 
-useradd -m -g sudo -s /bin/bash vinodoo  # Create an 'odoo' user with sudo powers
+#### Run the following commands to install the main dependencies:
 
-passwd vinodoo  # Ask and set a password for the new user
+```
+sudo apt-get update && sudo apt-get upgrade 
+sudo apt-get install -y git python3.5 postgresql nano virtualenv \
+						xz-utils wget fontconfig libfreetype6 \ 
+						libx11-6 libxext6 libxrender1 \
+						node-less node-clean-css xfonts-75dpi
+ ```
+						
 
-## LOGIN AS DEV USER  AND PREPARE ENVIRONMENT ##
 
-sudo apt-get update && sudo apt-get upgrade  #Install system updates
+#### Download and install wkhtmltopdf tool - runtime dependency of Odoo used to produce PDF reports.
 
-sudo apt-get install git  # Install Git
+wget -O wkhtmltox.tar.xz https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/wkhtmltox-0.12.4_linux-generic-amd64.tar.xz 
+tar xvf wkhtmltox.tar.xz
+sudo mv wkhtmltox/lib/* /usr/local/lib/
+sudo mv wkhtmltox/bin/* /usr/local/bin/
+sudo mv wkhtmltox/share/man/man1 /usr/local/share/man/
 
-sudo apt-get install npm  # Install NodeJs and its package manager
+#### Install the build dependencies
 
-sudo ln -s /usr/bin/nodejs /usr/bin/node  # call node runs nodejs
+sudo apt-get install -y gcc python3.5-dev libxml2-dev \
+						libxslt1-dev libevent-dev libsasl2-dev libssl-dev libldap2-dev \
+						libpq-dev libpng-dev libjpeg-dev
+						
+#### Configure PostgreSQL
 
-sudo npm install -g less less-plugin-clean-css  #Install less compiler
+sudo -u postgres createuser --createdb $(whoami)
+createdb $(whoami)
 
-mkdir ~/odoo-dev  # Create a directory to work in
+#### Configure Git - Optional
 
-$ cd ~/odoo-dev  # Go into our work directory
+git config --global user.name  <<Your Name>>
+git config --global user.email <<youremail@example.com>>
 
-$ git clone https://github.com/odoo/odoo.git -b 11.0 --depth=1  # Get Odoo source code
+#### Clone the Odoo code from Github:
 
-sudo apt-get install build-essential libssl-dev libffi-dev python3-dev
+-- Here, you can either choose the official Odoo branch or the Odoo Community Association (OCA) branch.
+-- If you want to clone the community association branch then clone following repo.
+-- Fixes and improvements are peer-reviewed by the community and tend to be merged faster in the OCA brach than on the official branch.
 
-sudo apt-get install libsasl2-dev libldap2-dev libssl-dev python3-pip
-
+mkdir ~/odoo-dev
+cd ~/odoo-dev
+git clone https://github.com/odoo/odoo.git -b 11.0 --depth=1 -- Official Brach
+git clone https://github.com/OCA/OCB.git odoo -b 11.0 --depth=1 -- OCA brach.
 cd odoo
+
+
+#### Create an python virtual environment and activate it.
+
+virtualenv -p python3 ~/odoo-11.0
+source ~/odoo-11.0/bin/activate
+
+#### Install dependencies of Odoo in the virtualenv
 
 pip3 install -r requirements.txt
 
-sudo apt-get install postgresql postgresql-contrib # Install PostGreSQL if not installed 
+#### Create and start your first Odoo instances:
 
-sudo su - postgres -c "createuser -s $USER" ## create postgreSQL user same as current log in user with super user priviledge
+createdb odoo-test
+python3 odoo-bin -d odoo-test --addons-path=addons --db-filter=odoo-test$
 
-## START THE ODOO SERVER ##
+##### Point your browser to http://localhost:8069 and authenticate it using the admin account and admin as password.
 
-./odoo-bin
+## For more secured envornment ##
+
+#### ignore createdb command and start odoo server using the following command. 
+
+python3 odoo-bin
+
+#### Now you can set the database name and user login. When you open http://localhost:8069 
+
 
